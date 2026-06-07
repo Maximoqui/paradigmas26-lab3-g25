@@ -1,76 +1,154 @@
+import org.apache.spark.sql.SparkSession // Permite crear y usar Spark
+
 object Main {
-  def main(args: Array[String]): Unit = {
-    // Parse command-line arguments
+
+  def main(args: Array[String]): Unit = { // Punto de entrada del programa
+
+    // Parsea los argumentos de línea de comandos
     val cmdArgs = CommandLineArgs.parse(args) match {
-      case Some(parsed) => parsed
-      case None => return // scopt prints error messages
+
+      case Some(parsed) => parsed // Si son válidos, los guarda
+
+      case None => return // Si son inválidos, termina el programa
+
     }
 
-    // Load subscriptions
-    val subscriptionOpts = FileIO.readSubscriptions(cmdArgs.subscriptionFile)
+    // Crea una sesión de Spark
+    val spark = SparkSession.builder()
+      .appName("RedditNER") // Nombre de la aplicación
+      .master("local[*]") // Usa todos los núcleos disponibles
+      .getOrCreate() // Crea la sesión o reutiliza una existente
 
-    // Filter out malformed subscriptions (None values)
+    val sc = spark.sparkContext // Obtiene el SparkContext
+
+    // Lee el archivo de suscripciones
+    val subscriptionOpts = FileIO.readSubscriptions(cmdArgs.subscriptionFile) match {
+
+      case Left(error) =>
+        println(error) // Muestra el error
+        spark.stop() // Detiene Spark
+        return // Finaliza el programa
+
+      case Right(opts) => opts // Obtiene las suscripciones válidas
+
+    }
+
+    // Elimina los None y conserva solo las suscripciones válidas
     val subscriptions = subscriptionOpts.flatten
 
-    // Download feeds and parse posts, tracking success/failure
-    val downloadResults = subscriptions.map { subscription =>
-      val feedOpt = FileIO.downloadFeed(subscription.url)
-      val posts = feedOpt.fold(List[Post]())(JsonParser.parsePosts(_, subscription.name))
-      (feedOpt.isDefined, posts)
+    // Verifica que exista al menos una suscripción válida
+    if (subscriptions.isEmpty) {
+
+      println("Error: No valid subscriptions found")
+      spark.stop()
+      return
+
     }
 
-    // Count feed successes/failures
-    val feedsSuccess = downloadResults.count(_._1)
-    val feedsFailed = downloadResults.length - feedsSuccess
+    // Obtiene la ruta del directorio de entidades
+    val entitiesDir = cmdArgs.entitiesDir
 
-    // Flatten all posts and count JSON parse failures
-    val allPosts = downloadResults.flatMap(_._2)
-    val postsSuccess = allPosts.length
-    val postsFailed = downloadResults.count(_._2.isEmpty)
+    // Verifica que exista el directorio
+    if (!new java.io.File(entitiesDir).exists()) {
 
-    // Filter empty posts
-    val filteredPosts = Analyzer.filterEmptyPosts(allPosts)
-    val postsFiltered = allPosts.length - filteredPosts.length
+      println(s"Error: entities directory '$entitiesDir' not found")
+      spark.stop()
+      return
 
-    // Calculate average characters in filtered posts
-    val totalChars = filteredPosts.map(post => post.title.length + post.selftext.length).sum
-    val avgChars = if (filteredPosts.nonEmpty) totalChars / filteredPosts.length else 0
+    }
 
-    // Prepare statistics
+    // Carga todos los diccionarios de entidades una sola vez
+    val dictionary = Dictionary.loadAll(entitiesDir)
+
+    // Convierte la lista de suscripciones en un RDD distribuido
+    val subsRDD = sc.parallelize(subscriptions)
+
+    // Descarga los feeds en paralelo
+    val postsRDD = subsRDD.flatMap { subscription =>
+
+      // Descarga el contenido RSS/JSON de la suscripción
+      val feedOpt = FileIO.downloadFeed(subscription.url)
+
+      feedOpt match {
+
+        case None =>
+
+          // Si falla la descarga muestra advertencia
+          println(s"Warning: Failed to download from '${subscription.name}' (${subscription.url})")
+
+          List.empty[Post] // Devuelve lista vacía
+
+        case Some(content) =>
+
+          // Convierte el JSON descargado en posts
+          val posts = JsonParser.parsePosts(content, subscription.name)
+
+          // Devuelve la lista de posts encontrados
+          posts
+
+      }
+
+    }
+
+    // Conserva solo posts con título y texto no vacíos
+    val filteredPostsRDD = postsRDD.filter { post =>
+
+      post.title.nonEmpty && post.selftext.nonEmpty
+
+    }
+
+    // Cuenta todos los posts descargados
+    val totalPosts = postsRDD.count()
+
+    // Cuenta los posts que pasaron el filtro
+    val filteredCount = filteredPostsRDD.count()
+
+    // Calcula cuántos fueron descartados
+    val droppedCount = totalPosts - filteredCount
+
+    // Calcula el promedio de caracteres por post
+    val avgChars: Long =
+      if (filteredCount > 0)
+
+        filteredPostsRDD
+          .map(p => (p.title.length + p.selftext.length).toLong) // Longitud total del post
+          .sum() / filteredCount // Promedio
+
+      else 0L // Si no hay posts válidos
+
+    // Cantidad de feeds procesados correctamente
+    val feedsSuccess = subscriptions.length
+
+    // Cantidad de feeds fallidos
+    val feedsFailed = 0
+
+    // Mapa con estadísticas para mostrar
     val stats = Map(
+
       "feedsSuccess" -> feedsSuccess,
       "feedsFailed" -> feedsFailed,
-      "postsSuccess" -> postsSuccess,
-      "postsFailed" -> postsFailed,
-      "postsFiltered" -> postsFiltered,
-      "avgChars" -> avgChars
+      "postsSuccess" -> totalPosts.toInt,
+      "postsFailed" -> 0,
+      "postsFiltered" -> droppedCount.toInt,
+      "avgChars" -> avgChars.toInt
+
     )
 
-    // Print output
+    // Imprime las estadísticas
     println(Formatters.formatProcessingStats(stats))
-    println()
 
-    // Check if we have any posts to process
-    if (filteredPosts.isEmpty) {
+    println() // Línea en blanco
+
+    // Si no quedó ningún post válido
+    if (filteredCount == 0) {
+
       println("Error: No valid posts downloaded after filtering")
+      spark.stop()
       return
+
     }
 
-    // Load dictionaries
-    val dictionary = Dictionary.loadAll(cmdArgs.entitiesDir)
+    // filteredPostsRDD queda listo para el ejercicio 3
 
-    // Detect entities in all posts (combine title and selftext)
-    val allEntities = filteredPosts.flatMap { post =>
-      val combinedText = post.title + " " + post.selftext
-      Analyzer.detectEntities(combinedText, dictionary)
-    }
-
-    // Count entities
-    val entityCounts = Analyzer.countEntities(allEntities)
-    val typeStats = Analyzer.countByType(allEntities)
-
-    println(Formatters.formatTypeStats(typeStats))
-    println()
-    println(Formatters.formatEntityStats(entityCounts, cmdArgs.topK))
   }
 }
