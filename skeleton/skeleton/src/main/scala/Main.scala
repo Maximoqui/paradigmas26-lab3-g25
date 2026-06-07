@@ -32,7 +32,7 @@ object Main {
       }
     }
 
-    // ← UNA SOLA VEZ acá
+    
     val subscriptions = subscriptionOpts.flatten
 
     if (subscriptions.isEmpty) {
