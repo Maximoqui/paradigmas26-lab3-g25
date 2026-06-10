@@ -100,6 +100,55 @@ object Main {
       return
     }
 
-    // filteredPostsRDD listo para ejercicio 3
+    // ===================== ejercicio 3: pipeline map-reduce =====================
+
+    // el diccionario vive en el driver; lo broadcasteamos para que cada worker
+    // reciba una sola copia eficiente en vez de serializarlo con cada tarea
+    val dictionaryBroadcast = sc.broadcast(dictionary)
+
+    // a) flatMap: extraemos entidades del título y del cuerpo de cada post
+    val entitiesRDD = filteredPostsRDD.flatMap { post =>
+      val dict          = dictionaryBroadcast.value
+      val titleEntities = Analyzer.detectEntities(post.title, dict)
+      val bodyEntities  = Analyzer.detectEntities(post.selftext, dict)
+      titleEntities ++ bodyEntities
+    }
+
+    // b) map: convertimos cada entidad en un par ((tipo, nombre), 1) listo para reducir
+    val entityPairsRDD = entitiesRDD.map { entity =>
+      ((entity.entityType, entity.text), 1)
+    }
+
+    // c) reduceByKey: sumamos los conteos parciales de cada clave para obtener el total por entidad
+    val entityCountsRDD = entityPairsRDD.reduceByKey(_ + _)
+
+    // d) traemos los resultados al driver, los ordenamos y mostramos el top K
+    val entityCountsList = entityCountsRDD.collect().toList
+
+    val topK = cmdArgs.topK
+
+    val sortedTopK = entityCountsList
+      .sortBy { case ((entityType, entityName), count) => (-count, entityType, entityName) }
+      .take(topK)
+
+    val topKMap = sortedTopK.toMap
+
+    println(Formatters.formatEntityStats(topKMap, topK))
+    println()
+
+    // resumen de cuántas entidades hay por tipo (calculado en el driver sobre la lista ya recolectada)
+    val typeCountsMap = entityCountsList
+      .groupBy { case ((entityType, _), _) => entityType }
+      .view
+      .mapValues(entries => entries.map(_._2).sum)
+      .toMap
+
+    val totalEntities      = typeCountsMap.values.sum
+    val typeStatsWithTotal = typeCountsMap + ("total" -> totalEntities)
+
+    println(Formatters.formatTypeStats(typeStatsWithTotal))
+    println()
+
+    spark.stop()
   }
 }
