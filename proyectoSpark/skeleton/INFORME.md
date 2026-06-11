@@ -45,6 +45,56 @@ y queremos saber cuántas veces apareció Scala en total hay que juntar  los res
 
 Esta pregunta, reformulándola, se refiere a qué características debe tener una función para que Spark pueda ejecutarla en distintos workers de forma distribuida. Una de las principales restricciones es que dichas funciones deberían ser lo más puras posible, tal como se trabajó en el Laboratorio 1. Esto implica evitar depender de variables externas o de estado compartido, ya que cada worker ejecuta una copia independiente de la función. Además, Spark debe poder enviar estas funciones desde el driver hacia los workers para que puedan ejecutarse de manera distribuida.
 
+## Monitoreo del éxito de las tareas
+> ¿Por qué los Accumulators solo deben usarse para métricas y no para tomar
+decisiones lógicas dentro de las etapas distribuidas del pipeline? ¿En qué
+situación un Accumulator puede dar un valor incorrecto?
+
+Los Accumulators solo deben usarse para métricas, no para controlar lógicas del
+pipeline, porque su valor no es determinista en presencia de reintentos de
+trabajo o ejecución especulativa. Si una tarea falla y se reintenta, Spark puede
+volver a ejecutar el mismo fragmento de código y sumar de nuevo el acumulador,
+lo que lleva a un conteo mayor al real. Por eso no es fiable usar un
+Accumulator para tomar decisiones condicionadas dentro de una transformación.
+
+Un caso típico de valor incorrecto es cuando una tarea se ejecuta dos veces por
+fallo o speculative execution: ambas ejecuciones pueden incrementar el mismo
+Accumulator, y el valor final reflejará la suma de ambas ejecuciones, no la
+cantidad real de eventos únicos.
+
+> ¿En qué momento del pipeline está disponible el valor de un Accumulator para
+ser leído por el driver?
+
+El valor de un Accumulator está disponible en el driver solo después de que la
+acción que materializa el RDD donde se actualiza haya terminado. Es decir,
+no tiene sentido leerlo mientras el pipeline sigue pendiente; debe leerse
+tras la ejecución completa de la acción que fuerza la evaluación de sus
+actualizaciones. En el `Main.scala` del proyecto, los valores de los
+acumuladores se pueden leer una vez que se hayan completado las acciones como
+`count()` sobre `postsRDD` y `filteredPostsRDD`.
+
+> Comparen el tiempo que tarda cada etapa del pipeline que midieron en la versión no paralelizada y la versión con Spark. ¿Qué conclusiones pueden sacar?
+> Para la cantidad de datos que estamos trabajando, ¿se aprecia la diferencia?
+> Justifique por qué. Nota: La comparación debe realizarse en ejecuciones sobre la
+> misma computadora y la misma conexión a internet.
+versión no paralelizada y la versión con Spark. ¿Qué conclusiones pueden sacar?
+Para la cantidad de datos que estamos trabajando, ¿se aprecia la diferencia?
+Justifique por qué. Nota: La comparación debe realizarse en ejecuciones sobre la
+misma computadora y la misma conexión a internet
+
+Para los volúmenes de datos de este proyecto, la mejora de tiempo entre la
+versión no paralelizada y la versión con Spark puede ser modesta o incluso
+nula en una sola computadora. Spark introduce sobrecarga de creación de jobs,
+serialización y planificación, por lo que en un dataset pequeño el tiempo de
+configuración puede compensar el beneficio del paralelismo. En cambio, la
+ventaja de Spark se aprecia mejor en cargas grandes, donde el trabajo se
+puede distribuir efectivamente entre varios cores o nodos.
+
+En este caso concreto, la diferencia es pequeña porque el pipeline descarga y
+procesa relativamente pocos posts, y la mayor parte del tiempo puede estar en
+la latencia de red. Por eso, sobre la misma máquina y conexión, la versión con
+Spark puede ser similar a la versión secuencial, aunque sigue siendo más clara
+conceptualmente y preparada para escalar si aumentan los datos.
 
 ## Acceso a datos y estadísticas del resultado
 
