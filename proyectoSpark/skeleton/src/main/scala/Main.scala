@@ -147,8 +147,9 @@ object Main {
     val entityCountsRDD = entityPairsRDD.reduceByKey(_ + _)
 
     // d) traemos los resultados al driver, los ordenamos y mostramos el top K
+    val inicio3 = System.currentTimeMillis()
     val entityCountsList = entityCountsRDD.collect().toList
-
+    val fin3 = System.currentTimeMillis()
     val topK = cmdArgs.topK
 
     val sortedTopK = entityCountsList
@@ -171,6 +172,9 @@ object Main {
     val typeStatsWithTotal = typeCountsMap + ("total" -> totalEntities)
     postsRDD.unpersist() // liberamos memoria del RDD de posts, ya no lo necesitamos para nada más
     filteredPostsRDD.unpersist() // liberamos memoria del RDD de posts filtrados, ya no lo necesitamos para nada más
+    entityCountsRDD.unpersist() // liberamos memoria del RDD de conteos de entidades, ya no lo necesitamos para nada más
+    
+  
 
     println(Formatters.formatTypeStats(typeStatsWithTotal))
     println()
