@@ -20,11 +20,10 @@ Diagrama de flujo del pipeline: se muestra el recorrido de los datos desde la le
 >por clave. Aplicable cuando el resultado depende de todos los elementos, no de uno solo.
 >¿Hay algún paso del pipeline que no encaje en ninguna de estas abstracciones? ¿Por qué?
 
-
-Luego de realizar el gráfico,  se pudo identificar rápidamente que la Contabilización de Entidades se puede expresar con una de las abstracciones de Spark que es reduceByKey ya que se agrupan las entidades con la misma clave y se suma las ocurrencias para obtener el total.
-Por otro lado,  Descargar Feeds puede expresarse mediante flatmap ya que cada suscripción puede producir una cantidad de post, lo mismo pasa con la Extracción de Entidades. (AMPLIAR MÁS)
-Y map se utiliza para la Clasificación de Entidades porque transformamos cada entidad en un par clave-valor produciendo una salida por entidad.
-El caso donde no encaja con ninguna de las abstracciones que ofrece Spark seria cuando filtramos los post vacíos o que no cumplen con los requisitos pedidos, ya que estamos usando filter
+Luego de realizar el gráfico,  se pudo identificar que la Contabilización de Entidades puede expresar con una de las abstracciones de Spark que es reduceByKey ya que se agrupan las entidades con la misma clave y se suma las ocurrencias para obtener el conteo total de cada una.
+Por otro lado,  Descargar Feeds puede expresarse mediante flatmap ya que cada suscripción puede producir una cantidad variable de posts, es decir, puede no devolver ningun post valido o puede devolver varios posts, por lo que la relación ya es de muchos a muchos respecto a la entrada y salida, lo mismo pasa con la Extracción de Entidades ya que cada post puede obtener 0 o varias entidades nombradas.
+Y map se utiliza para la Clasificación de Entidades porque transformamos cada entidad en un par clave-valor produciendo una salida por entidad. 
+El caso donde no encaja con ninguna de las abstracciones que ofrece Spark seria cuando filtramos los post vacíos o que no cumplen con los requisitos pedidos, ya que estamos usando filter donde se encarga de conservar aquellos elementos que satisfacen la condición.
 
 >c. Las reducciones constituyen una barrera de sincronización: ningún worker puede
 >producir el resultado final hasta que todos hayan terminado su parte. Identifiquen qué
@@ -43,8 +42,5 @@ y queremos saber cuántas veces apareció Scala en total hay que juntar  los res
 >esas funciones para que puedan ejecutarse en un entorno distribuido? Piensen en
 >serialización, estado compartido y efectos secundarios.
 
-Esta pregunta, reformulandola se refiere a que caracteristicas tiene que tener una funcion para que Spark pueda ejecutarla workers distribuidos porque puede pasar el caso en donde 
-Si una función tiene que viajar del driver a los workers, ¿qué requisito debe cumplir?
-Si una función modifica una variable global, ¿es seguro cuando hay varios workers?
-Si una función escribe un archivo o hace println, ¿qué puede pasar si Spark reejecuta una tarea?
 
+Esta pregunta, reformulándola, se refiere a qué características debe tener una función para que Spark pueda ejecutarla en distintos workers de forma distribuida. Una de las principales restricciones es que dichas funciones deberían ser lo más puras posible, tal como se trabajó en el Laboratorio 1. Esto implica evitar depender de variables externas o de estado compartido, ya que cada worker ejecuta una copia independiente de la función. Además, Spark debe poder enviar estas funciones desde el driver hacia los workers para que puedan ejecutarse de manera distribuida.
