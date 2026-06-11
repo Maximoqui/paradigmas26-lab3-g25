@@ -89,13 +89,10 @@ object Main {
     val inicio = System.currentTimeMillis()
     val totalPostsCount = postsRDD.count()
     val fin = System.currentTimeMillis()
-    println(s"Tiempo para contar totalPosts: ${fin - inicio} ms")
     
     val inicio2 = System.currentTimeMillis()
     val filteredCount = filteredPostsRDD.count()
     val fin2 = System.currentTimeMillis()
-    println(s"Tiempo para contar filteredPosts: ${fin2 - inicio2} ms")
-    
     val droppedCount  = totalPostsCount - filteredCount
    
     val avgChars: Long =
@@ -172,9 +169,14 @@ object Main {
 
     val totalEntities      = typeCountsMap.values.sum
     val typeStatsWithTotal = typeCountsMap + ("total" -> totalEntities)
+    postsRDD.unpersist() // liberamos memoria del RDD de posts, ya no lo necesitamos para nada más
+    filteredPostsRDD.unpersist() // liberamos memoria del RDD de posts filtrados, ya no lo necesitamos para nada más
 
     println(Formatters.formatTypeStats(typeStatsWithTotal))
     println()
+    println(s"Tiempo para contar filteredPosts: ${fin2 - inicio2} ms")
+    println(s"Tiempo para contar totalPosts: ${fin - inicio} ms")
+    
 
     spark.stop()
   }
