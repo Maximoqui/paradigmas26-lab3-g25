@@ -44,3 +44,31 @@ y queremos saber cuántas veces apareció Scala en total hay que juntar  los res
 
 
 Esta pregunta, reformulándola, se refiere a qué características debe tener una función para que Spark pueda ejecutarla en distintos workers de forma distribuida. Una de las principales restricciones es que dichas funciones deberían ser lo más puras posible, tal como se trabajó en el Laboratorio 1. Esto implica evitar depender de variables externas o de estado compartido, ya que cada worker ejecuta una copia independiente de la función. Además, Spark debe poder enviar estas funciones desde el driver hacia los workers para que puedan ejecutarse de manera distribuida.
+
+
+## Acceso a datos y estadísticas del resultado
+
+> ¿Qué ocurriría si no llamaran a cache()? ¿Cuántas veces se ejecutaría la descarga de feeds?
+
+Sin `cache()`, la descarga de feeds se ejecutaría **3 veces**:
+1. Primera vez al llamar `postsRDD.count()` para obtener `totalPostsCount`
+2. Segunda vez al llamar `filteredPostsRDD.count()` para obtener `filteredCount` — porque `filteredPostsRDD` depende de `postsRDD`
+3. Tercera vez al hacer `filteredPostsRDD.flatMap(...)` para extraer entidades — porque `filteredPostsRDD` depende de `postsRDD`
+
+Con `cache()`, la descarga se ejecuta una sola vez y luego se reutilizan los datos de la memoria cache en los accesos posteriores.
+
+> ¿Por qué es incorrecto llamar a collect() entre los pasos a) y b) del ejercicio 3 y luego continuar el pipeline? ¿Qué consecuencia tiene sobre la distribución del trabajo?
+
+Llamar `collect()` entre `entitiesRDD` (paso a: flatMap) y `entityPairsRDD` (paso b: map) sería incorrecto porque:
+- `collect()` trae todos los datos al driver, lo que pierde el paralelismo distribuido.
+- Los workers no participarían en los pasos siguientes; el trabajo continuar local en el driver.
+- La agregación con `reduceByKey` sucedería en el driver en modo local, no distribuida en los workers.
+- Se pierde completamente la capacidad de escalar a clusters grandes, ya que el driver tendría que almacenar toda la colección en memoria, lo cual es un cuello de botella.
+
+> cache() es también lazy. ¿En qué momento se almacena realmente el RDD en memoria?
+
+`cache()` no almacena nada inmediatamente; solo marca el RDD para ser cacheado. El almacenamiento real ocurre cuando:
+- Se ejecuta la **primera acción** sobre ese RDD (o un RDD descendiente que depende de él).
+- En el código: `postsRDD.cache()` se almacena cuando se llama `postsRDD.count()` (línea ~100), momento en el cual Spark evalúa toda la lineage y almacena el resultado en memoria.
+- Y `filteredPostsRDD.cache()` se almacena cuando se llama `filteredPostsRDD.count()` (línea ~105).
+- Después, cualquier uso posterior de ese RDD obtiene datos del cache, sin recomputar la lineage.
