@@ -45,7 +45,18 @@ y queremos saber cuántas veces apareció Scala en total hay que juntar  los res
 
 Esta pregunta, reformulándola, se refiere a qué características debe tener una función para que Spark pueda ejecutarla en distintos workers de forma distribuida. Una de las principales restricciones es que dichas funciones deberían ser lo más puras posible, tal como se trabajó en el Laboratorio 1. Esto implica evitar depender de variables externas o de estado compartido, ya que cada worker ejecuta una copia independiente de la función. Además, Spark debe poder enviar estas funciones desde el driver hacia los workers para que puedan ejecutarse de manera distribuida.
 
-## Monitoreo del éxito de las tareas
+
+## Ejercicio 2 - Paralelizar la descarga de feeds
+
+>Al escribir el flatMap, manejen los errores dentro de la función de forma que un fallo
+>no cancele el procesamiento del resto. En Informe.md expliquen qué pasaría si dejaran
+>propagar la excepción.
+
+Si la excepción se propaga fuera del flatMap, Spark la trata como un fallo de tarea. Dependiendo de la configuración, reintenta la tarea N veces y si sigue fallando, cancela el job completo. Esto significa que un único feed con timeout o error HTTP derribaría el procesamiento de todos los demás feeds, lo cual es inaceptable para un pipeline que debe ser tolerante a fallos.
+
+## Ejercicio 3 - Paralelizar el computo de entidades nombradas
+
+## Ejercicio 4 -  Monitoreo del éxito de las tareas
 > ¿Por qué los Accumulators solo deben usarse para métricas y no para tomar
 decisiones lógicas dentro de las etapas distribuidas del pipeline? ¿En qué
 situación un Accumulator puede dar un valor incorrecto?
@@ -96,7 +107,7 @@ la latencia de red. Por eso, sobre la misma máquina y conexión, la versión co
 Spark puede ser similar a la versión secuencial, aunque sigue siendo más clara
 conceptualmente y preparada para escalar si aumentan los datos.
 
-## Acceso a datos y estadísticas del resultado
+## Ejercicio 5 - Acceso a datos y estadísticas del resultado
 
 > ¿Qué ocurriría si no llamaran a cache()? ¿Cuántas veces se ejecutaría la descarga de feeds?
 
