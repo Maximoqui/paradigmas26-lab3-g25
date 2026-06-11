@@ -1,0 +1,33 @@
+[0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = /home/masita-famaf/paradigmas26-lab3-g25/proyectoSpark/skeleton/target/scala-2.13/classes.bak[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = /home/masita-famaf/paradigmas26-lab3-g25/proyectoSpark/skeleton/target/scala-2.13/classes.bak[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mRegistering generated classes:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	JsonParser$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	University.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FileIO$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Organization.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FileIO.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ProgrammingLanguage.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	CommandLineArgs$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Place.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	NamedEntity.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Analyzer.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Main.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Formatters.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	JsonParser.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Subscription$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Post$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Technology.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Main$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	CommandLineArgs.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Person.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Formatters$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Analyzer$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Subscription.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Dictionary$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Dictionary.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Post.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mRemoving the temporary directory used for backing up class files: /home/masita-famaf/paradigmas26-lab3-g25/proyectoSpark/skeleton/target/scala-2.13/classes.bak[0m

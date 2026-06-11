@@ -4,7 +4,7 @@
 # Modular test functions for flexibility and extensibility
 
 # Constants
-ENV_VARS="SBT_OPTS=\"--sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED\""
+ENV_VARS=""
 TESTS_DIR="data"
 PASSED=0
 FAILURES=0

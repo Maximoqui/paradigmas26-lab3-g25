@@ -15,7 +15,7 @@ object Main {
       .getOrCreate()
 
     val sc = spark.sparkContext
-
+    val filePath = cmdArgs.subscriptionFile
     // Definimos acumuladores para contar feeds y posts exitosos-descargados/fallidos-descartados
     val successfulFeeds = sc.longAccumulator("successfulFeeds")
     val failedFeeds = sc.longAccumulator("failedFeeds")
@@ -95,24 +95,23 @@ object Main {
     val fin2 = System.currentTimeMillis()
     val droppedCount  = totalPostsCount - filteredCount
    
-    val avgChars: Long =
+    val avgChars: Int =
       if (filteredCount > 0)
-        filteredPostsRDD
-          .map(p => (p.title.length + p.selftext.length).toLong)
-          .sum() / filteredCount
-      else 0L
-
+        (filteredPostsRDD
+          .map(p => (p.title.length + p.selftext.length).toDouble)
+          .sum() / filteredCount).toInt
+      else 0
     // Obtenemos los valores de los acumuladores para las estadísticas finales
     val feedsSuccess = successfulFeeds.value
     val feedsFailed  = failedFeeds.value
 
-    val stats = Map(
-      "feedsSuccess"  -> feedsSuccess,
-      "feedsFailed"   -> feedsFailed,
+    val stats: Map[String, Int] = Map(
+      "feedsSuccess"  -> feedsSuccess.toInt,
+      "feedsFailed"   -> feedsFailed.toInt,
       "postsSuccess"  -> totalPosts.value.toInt,
       "postsFailed"   -> totalPostsFailed.value.toInt,
       "postsFiltered" -> droppedCount.toInt,
-      "avgChars"      -> avgChars.toInt
+      "avgChars"      -> avgChars
     )
 
     println(Formatters.formatProcessingStats(stats))

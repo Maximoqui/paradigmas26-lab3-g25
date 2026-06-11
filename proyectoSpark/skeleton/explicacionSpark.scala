@@ -1,4 +1,4 @@
-import org.apache.spark.sql.SparkSession
+/* import org.apache.spark.sql.SparkSession
 // SparkSession es el punto de entrada a Spark.
 // Sin esto no podemos crear RDDs ni usar ninguna función distribuida.
 
@@ -194,4 +194,4 @@ object Main {
     // para extraer y contar las entidades nombradas en paralelo.
 
   }
-}
+} */

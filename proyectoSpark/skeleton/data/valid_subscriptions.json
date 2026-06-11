@@ -1,14 +1,14 @@
 [
   {
     "name": "Scala",
-    "url": "https://www.reddit.com/r/scala/.json?count=10"
+    "url": "http://localhost:8123/r/scala/.json"
   },
   {
     "name": "Learn Programming",
-    "url": "https://www.reddit.com/r/learnprogramming/.json?count=10"
+    "url": "http://localhost:8123/r/programming/.json"
   },
   {
     "name": "Learn Python",
-    "url": "https://www.reddit.com/r/learnpython/.json?count=10"
+    "url": "http://localhost:8123/r/learnpython/.json0"
   }
 ]
