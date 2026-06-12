@@ -147,3 +147,29 @@ Llamar `collect()` entre `entitiesRDD` (paso a: flatMap) y `entityPairsRDD` (pas
 - En el código: `postsRDD.cache()` se almacena cuando se llama `postsRDD.count()` (línea ~100), momento en el cual Spark evalúa toda la lineage y almacena el resultado en memoria.
 - Y `filteredPostsRDD.cache()` se almacena cuando se llama `filteredPostsRDD.count()` (línea ~105).
 - Después, cualquier uso posterior de ese RDD obtiene datos del cache, sin recomputar la lineage.
+
+## Evidencia de Ejecución — Spark Jobs
+
+![alt text](image.png)
+Observaciones relevantes:
+
+- Las 12 tareas indican el grado de paralelismo (particiones) sobre el que se ejecutó la operación.
+- El evento de adición del executor confirma la asignación de recursos por parte del cluster justo antes del inicio del job.
+- El conteo de 0/12 tareas completadas en el instante capturado sugiere que la medición fue tomada durante el arranque; el valor de `0.2 s` puede corresponder al tiempo transcurrido hasta la captura y no al tiempo total final si el job continuó.
+
+## Estadisticas de Entidades
+```bash
+[info] ============ ESTADÍSTICAS DE ENTIDADES ============
+[info] Entidades totales: 57
+[info] Entidades por categoría:
+[info]     [Person]: 2
+[info]     [Organization]: 11
+[info]     [University]: 0
+[info]     [Place]: 2
+[info]     [Technology]: 0
+[info]     [ProgrammingLanguage]: 42
+[info] Tiempo para contar filteredPosts: 44 ms
+[info] Tiempo para contar totalPosts: 5317 ms
+
+
+```
