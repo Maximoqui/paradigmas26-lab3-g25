@@ -1,0 +1,37 @@
+[debug] > Exec(early(addDefaultCommands), None, None)
+[debug] > Exec(addDefaultCommands, None, None)
+[debug] > Exec(early(initialize), None, None)
+[debug] > Exec(initialize, None, None)
+[debug] > Exec(boot, None, None)
+[debug] > Exec(writeSbtVersion, None, None)
+[debug] > Exec(reload, None, None)
+[debug] > Exec(sbtStashOnFailure, None, None)
+[debug] > Exec(onFailure loadFailed, None, None)
+[debug] > Exec(loadp, None, None)
+[info] welcome to sbt 1.12.4 (Ubuntu Java 17.0.19)
+[debug] Load.defaultLoad until apply took 206.999261ms
+[debug]           Load.loadUnit: plugins took 116.750609ms
+[debug]           Load.loadUnit: defsScala took 0.652696ms
+[debug] [Loading] Scanning directory /home/masita-famaf/paradigmas26-lab3-g25/proyectoSpark/skeleton/project
+[debug] [Loading] Found non-root projects 
+[debug] [Loading] Done in /home/masita-famaf/paradigmas26-lab3-g25/proyectoSpark/skeleton/project, returning: ()
+[debug] deducing auto plugins based on known facts Set(Atom(sbt.plugins.CorePlugin)) and clauses Clauses(Clause(Atom(sbt.plugins.JvmPlugin),Set(Atom(sbt.plugins.IvyPlugin)))
+[debug] Clause(Atom(sbt.ScriptedPlugin),Set(Atom(sbt.plugins.JvmPlugin)))
+[debug] Clause(Atom(sbt.plugins.SbtPlugin),Set(Atom(sbt.ScriptedPlugin)))
+[debug] Clause(Atom(sbt.plugins.SemanticdbPlugin),Set(Atom(sbt.plugins.JvmPlugin)))
+[debug] Clause(Atom(sbt.plugins.JUnitXmlReportPlugin),Set(Atom(sbt.plugins.JvmPlugin)))
+[debug] Clause(Atom(sbt.plugins.MiniDependencyTreePlugin),Set(Atom(sbt.plugins.JvmPlugin)))
+[debug] Clause(Atom(sbt.plugins.CorePlugin),Set(Atom(sbt.plugins.IvyPlugin)))
+[debug] Clause(Atom(sbt.plugins.IvyPlugin),Set(Atom(sbt.plugins.JvmPlugin)))
+[debug] Clause(Atom(sbt.plugins.JvmPlugin),Set(Atom(sbt.plugins.SemanticdbPlugin)))
+[debug] Clause(Atom(sbt.plugins.JvmPlugin),Set(Atom(sbt.plugins.JUnitXmlReportPlugin)))
+[debug] Clause(Atom(sbt.plugins.CorePlugin),Set(Atom(sbt.plugins.Giter8TemplatePlugin)))
+[debug] Clause(Atom(sbt.plugins.JvmPlugin),Set(Atom(sbt.plugins.MiniDependencyTreePlugin))))
+[debug]   :: deduced result: Matched(sbt.plugins.CorePlugin,sbt.plugins.Giter8TemplatePlugin,sbt.plugins.IvyPlugin,sbt.plugins.JvmPlugin,sbt.plugins.MiniDependencyTreePlugin,sbt.plugins.JUnitXmlReportPlugin,sbt.plugins.SemanticdbPlugin)
+[debug] Plugins.deducer#function took 46.259649 ms
+[debug]               Load.resolveProject(skeleton-build) took 91.461155ms
+[debug]             Load.loadTransitive: finalizeProject(Project(id skeleton-build, base: /home/masita-famaf/paradigmas26-lab3-g25/proyectoSpark/skeleton/project, plugins: List(<none>))) took 163.415369ms
+[debug] [Loading] Done in /home/masita-famaf/paradigmas26-lab3-g25/proyectoSpark/skeleton/project, returning: (skeleton-build)
+[debug]           Load.loadUnit: loadedProjectsRaw took 191.047156ms
+[debug]           Load.loadUnit: cleanEvalClasses took 0.330173ms
+[debug]         Load.loadUnit(file:/home/masita-famaf/paradigmas26-lab3-g25/proyectoSpark/skeleton/project/, ...) took 323.647925ms

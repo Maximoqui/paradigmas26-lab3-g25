@@ -4,7 +4,7 @@
 # Modular test functions for flexibility and extensibility
 
 # Constants
-ENV_VARS=""
+ENV_VARS=''
 TESTS_DIR="data"
 PASSED=0
 FAILURES=0
