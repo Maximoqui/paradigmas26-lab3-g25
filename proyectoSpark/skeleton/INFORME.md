@@ -55,6 +55,20 @@ Esta pregunta, reformulándola, se refiere a qué características debe tener un
 Si la excepción se propaga fuera del flatMap, Spark la trata como un fallo de tarea. Dependiendo de la configuración, reintenta la tarea N veces y si sigue fallando, cancela el job completo. Esto significa que un único feed con timeout o error HTTP derribaría el procesamiento de todos los demás feeds, lo cual es inaceptable para un pipeline que debe ser tolerante a fallos.
 
 ## Ejercicio 3 - Paralelizar el computo de entidades nombradas
+reduceByKey es una barrera de sincronización. ¿Qué ocurre en el cluster en ese
+punto? ¿Por qué es inevitable para este problema?
+en el clauster en ese punto se hace un shuffle osea los workers intercambian datos para que todos los pares clave valor terminen en el mismo worker recien entonces puede aplicar la reduccion 
+es inevitable porque no se podria hacer la reduccion correcta si los datos estan distribuidos entre los workers la forma de unificarlos es q un solo worker tenga todas las clave valor q son iguales para poder hacer la correcta reduccion 
+
+¿Qué restricciones debe cumplir la función que se le pasa a reduceByKey?
+Piensen en conmutatividad y asociatividad.
+la operacion tiene q ser asociativa y conmutativa porque los datos llegaran en cualquier orden entonces 
+(a+b)+c = a+(b+c) y a+b=b+a si no cumple estas propiedades como spark trabaja en paralelo podria dar resultados distintos segun como reparta el trabajo y no queremos eso 
+
+¿Dónde se hace la lectura del diccionario de entidades? ¿En el driver o los
+workers?
+
+la lectura del diccionario se hace desde el disco en Dictionary.loadAll luego el driver lo distribuye a los workers usando sc.broadckast y cada worker utiliza su copia local 
 
 ## Ejercicio 4 -  Monitoreo del éxito de las tareas
 > ¿Por qué los Accumulators solo deben usarse para métricas y no para tomar
